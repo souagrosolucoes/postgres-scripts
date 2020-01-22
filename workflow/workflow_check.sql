@@ -10,7 +10,7 @@ BEGIN
         return true;
     END IF;
 
-    EXECUTE format('SELECT * FROM "next_setp" WHERE COALESCE(setp_id_src, -1) = COALESCE(' || _current_step || ', -1) AND setp_id_dst = ' || d);
+    EXECUTE format('SELECT * FROM "next_step" WHERE COALESCE(step_id_src, -1) = COALESCE(' || _current_step || ', -1) AND step_id_dst = ' || d);
     GET DIAGNOSTICS _ct = ROW_COUNT;
     IF _ct = 0 THEN
         return false;
@@ -73,33 +73,41 @@ CREATE TABLE "workflow_entity" (
 );
 
 CREATE TABLE "workflow_group_step" (
-    "setp_id" serial NOT NULL,
+    "step_id" serial NOT NULL,
     "workflow_group_id" integer NOT NULL,
     "name" character varying(256) NOT NULL,
     "position_order" integer NOT NULL,
     "description" text,
-    CONSTRAINT "workflow_group_step_setp_id_workflow_group_id" PRIMARY KEY ("setp_id", "workflow_group_id"),
+    CONSTRAINT "workflow_group_step_step_id_workflow_group_id" PRIMARY KEY ("step_id", "workflow_group_id"),
     CONSTRAINT "workflow_group_step_workflow_group_id_fkey" FOREIGN KEY (workflow_group_id) REFERENCES workflow_group(id)
 );
 
-CREATE TABLE "workflow_next_setp" (
+CREATE TABLE "workflow_next_step" (
     "id" serial NOT NULL,
-    "setp_id_src" integer,
-    "setp_id_dst" integer NOT NULL,
+    "step_id_src" integer,
+    "step_id_dst" integer NOT NULL,
     "workflow_group_id" integer NOT NULL,
-    CONSTRAINT "workflow_next_setp_id" PRIMARY KEY ("id"),
-    CONSTRAINT "workflow_next_setp_setp_id_src_setp_id_dst" UNIQUE ("setp_id_src", "setp_id_dst"),
-    CONSTRAINT "workflow_next_setp_setp_id_dst_workflow_group_id_fkey" FOREIGN KEY (setp_id_dst, workflow_group_id) REFERENCES workflow_group_step(setp_id, workflow_group_id),
-    CONSTRAINT "workflow_next_setp_setp_id_src_workflow_group_id_fkey" FOREIGN KEY (setp_id_src, workflow_group_id) REFERENCES workflow_group_step(setp_id, workflow_group_id)
+    CONSTRAINT "workflow_next_step_id" PRIMARY KEY ("id"),
+    CONSTRAINT "workflow_next_step_step_id_src_step_id_dst" UNIQUE ("step_id_src", "step_id_dst"),
+    CONSTRAINT "workflow_next_step_step_id_dst_workflow_group_id_fkey" FOREIGN KEY (step_id_dst, workflow_group_id) REFERENCES workflow_group_step(step_id, workflow_group_id),
+    CONSTRAINT "workflow_next_step_step_id_src_workflow_group_id_fkey" FOREIGN KEY (step_id_src, workflow_group_id) REFERENCES workflow_group_step(step_id, workflow_group_id)
 );
 
-CREATE TABLE "workflow_next_steps_dependence" (
-    "id" serial NOT NULL,
-    "next_setp_id" integer NOT NULL,
-    "setp_id" integer NOT NULL,
+CREATE TABLE "workflow_next_step_dependence" (
+    "next_step_id" integer NOT NULL,
     "workflow_group_id" integer NOT NULL,
-    CONSTRAINT "workflow_next_steps_dependence_id" PRIMARY KEY ("id"),
-    CONSTRAINT "workflow_next_steps_dependence_next_setp_id_setp_id_workflow_gr" UNIQUE ("next_setp_id", "setp_id", "workflow_group_id"),
-    CONSTRAINT "workflow_next_steps_dependence_next_setp_id_fkey" FOREIGN KEY (next_setp_id) REFERENCES workflow_next_setp(id),
-    CONSTRAINT "workflow_next_steps_dependence_setp_id_workflow_group_id_fkey" FOREIGN KEY (setp_id, workflow_group_id) REFERENCES workflow_group_step(setp_id, workflow_group_id)
+    CONSTRAINT "workflow_next_steps_dependence_id" PRIMARY KEY ("next_step_id", "workflow_group_id"),
+    CONSTRAINT "workflow_next_steps_dependence_next_step_id_fkey" FOREIGN KEY (next_step_id) REFERENCES workflow_next_step(id),
+    CONSTRAINT "workflow_next_steps_workflow_group_id_fkey" FOREIGN KEY (workflow_group_id) REFERENCES workflow_group(id)
 );
+
+CREATE TABLE "workflow_next_step_dependence_step" (
+    "id" serial NOT NULL,
+    "step_id" integer NOT NULL,
+    "workflow_group_id" integer NOT NULL,
+    "next_step_id" integer NOT NULL,
+    CONSTRAINT "workflow_next_step_dependence_step_id" PRIMARY KEY ("id"),
+    CONSTRAINT "workflow_next_step_dependence_step_id_workflow_group_id_fkey" FOREIGN KEY (step_id, workflow_group_id) REFERENCES workflow_group_step(step_id, workflow_group_id),
+    CONSTRAINT "workflow_next_step_dependence_step_id_workflow_next_step_dependence_id_fkey" FOREIGN KEY (next_step_id, workflow_group_id) REFERENCES workflow_next_step_dependence(next_step_id, workflow_group_id)
+);
+
