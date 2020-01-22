@@ -6,7 +6,7 @@ O script [workflow_check.sql](workflow_check.sql)
 De forma geral teremos as seguintes entidades
 
 | Entidades                         	| Tipo   	| Descrição                                                                                   	|
-|-----------------------------   ---	|--------	|---------------------------------------------------------------------------------------------	|
+|-----------------------------------	|--------	|---------------------------------------------------------------------------------------------	|
 | workflow_group                    	| tabela 	| Registra os workflows que serão gerenciados.                                                	|
 | workflow_entity                   	| tabela 	| Registra o nome das tabelas que mantêm o status<br>atual para cada workflow                 	|
 | workflow_group_step               	| tabela 	| Registra cada uma dos passos presente em um <br>determinado workflows                       	|
