@@ -1,20 +1,34 @@
 CREATE OR REPLACE FUNCTION workflow_check_change_step(d int, wf int, entity_id int, table_name varchar)
 RETURNS boolean AS $BODY$
 DECLARE
-    _ct int := 0;
+    _next_step_id int := null;
     _current_step int := null;
+    _wf_current_step int := null;
+    _count int := 0;
+    _dependence record;
 BEGIN
 
     EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id = ' || entity_id || ' and workflow_group_id = ' || wf || ') as current_step;', table_name) INTO _current_step;
-    IF(_current_step == d) THEN
-        return true;
-    END IF;
-
-    EXECUTE format('SELECT * FROM "next_step" WHERE COALESCE(step_id_src, -1) = COALESCE(' || _current_step || ', -1) AND step_id_dst = ' || d);
-    GET DIAGNOSTICS _ct = ROW_COUNT;
-    IF _ct = 0 THEN
+    IF(_current_step = d) THEN
+        RAISE EXCEPTION 'source is the same as the destination';
         return false;
     END IF;
+
+    EXECUTE format('SELECT id FROM "workflow_next_step" WHERE COALESCE(step_id_src, -1) = COALESCE(' || _current_step || ', -1) AND step_id_dst = ' || d) INTO _next_step_id;
+    IF _next_step_id = null THEN
+        return false;
+    END IF;
+
+    FOR _dependence IN
+        SELECT * FROM workflow_next_step_dependence where next_step_id = _next_step_id
+    LOOP
+        EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id = ' || entity_id || ' and workflow_group_id = ' || _dependence.workflow_group_id || ') as wf_current_step;', table_name) INTO _wf_current_step;
+        EXECUTE format('SELECT count(*) FROM workflow_next_step_dependence_step where next_step_id =' || _next_step_id || ' AND workflow_group_id =' || _dependence.workflow_group_id || ' AND step_id =' || _wf_current_step) INTO _count;
+        IF _count = 0 THEN
+            return false;
+        END IF;
+    END LOOP;
+
     return true;
 END;
 $BODY$

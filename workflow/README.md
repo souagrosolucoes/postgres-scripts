@@ -1,4 +1,5 @@
 # Gerenciamento de WorkFlow (fluxo de trabalho)
+:shipit:
 
 O script [workflow_check.sql](workflow_check.sql)
  contém as tabelas e funções para criar a estrutura básica do gerenciamento de fluxos de trabalho de forma genérica, permitindo que o usuário possa criar e organizar de forma genérica os seus próprios fluxos.
@@ -85,7 +86,10 @@ Os dois workflows mostrado na figura serão utilizado como referencia no exemplo
 | 1  	| 2       	| 1                 	| 10           	|
 | 2  	| 3       	| 1                 	| 11           	|
 | 3  	| 3       	| 1                 	| 8            	|
-| 4  	| 3       	| 4                 	| 12           	|
+| 4  	| 3       	| 1                 	| 12           	|
 | 5  	| 3       	| 1                 	| 9            	|
 | 6  	| 4       	| 1                 	| 9            	|
-| 7  	| 4       	| 2                 	| 9            	|
+| 7  	| 8       	| 2                 	| 9            	|
+
+O arquivo [create-wf.sql](example/create-wf.sql) tem os insert para criar a estrutura dos workflows de exemplo.
+> obs. os comando `INSERT` poder fazer com que a sequência de auto incremento fique inconsistente.
