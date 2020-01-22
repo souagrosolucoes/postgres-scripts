@@ -1,2 +1,2 @@
 ## Gerenciamento de WorkFlow (fluxo de trabalho)
-![workflow](/_img/workflows.png?raw=true "exemplo de workflow")
+![workflow](_img/workflows.png "exemplo de workflow")
