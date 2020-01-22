@@ -6,7 +6,7 @@ CREATE TABLE "table_test_workflow_step_historic" (
     "time_from" timestamp DEFAULT now() NOT NULL,
     "time_to" timestamp,
     CONSTRAINT "table_test_workflow_step_historic_id" PRIMARY KEY ("id"),
-    CONSTRAINT "table_test_workflow_step_histori_step_id_workflow_group_id_fkey" FOREIGN KEY (step_id, workflow_group_id) REFERENCES workflow_group_step(setp_id, workflow_group_id),
+    CONSTRAINT "table_test_workflow_step_histori_step_id_workflow_group_id_fkey" FOREIGN KEY (step_id, workflow_group_id) REFERENCES workflow_group_step(step_id, workflow_group_id),
     CONSTRAINT "table_test_workflow_step_historic_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES table_test(id),
     CONSTRAINT "table_test_workflow_validate" CHECK (workflow_check_change_step(step_id, workflow_group_id, entity_id, 'table_test_workflow_step'))
 );

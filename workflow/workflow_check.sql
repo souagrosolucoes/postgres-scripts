@@ -8,21 +8,26 @@ DECLARE
     _dependence record;
 BEGIN
 
-    EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id = ' || entity_id || ' and workflow_group_id = ' || wf || ') as current_step;', table_name) INTO _current_step;
+    EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id=%L and workflow_group_id = ' || wf || ') as current_step;', table_name, entity_id) INTO _current_step;
     IF(_current_step = d) THEN
         RAISE EXCEPTION 'source is the same as the destination';
         return false;
     END IF;
 
-    EXECUTE format('SELECT id FROM "workflow_next_step" WHERE COALESCE(step_id_src, -1) = COALESCE(' || _current_step || ', -1) AND step_id_dst = ' || d) INTO _next_step_id;
-    IF _next_step_id = null THEN
+    IF(_current_step IS NULL) THEN
+        EXECUTE format('SELECT id FROM "workflow_next_step" WHERE COALESCE(step_id_src, -1) = -1 AND step_id_dst = ' || d) INTO _next_step_id;
+    ELSE
+        EXECUTE format('SELECT id FROM "workflow_next_step" WHERE COALESCE(step_id_src, -1) = COALESCE(' || _current_step || ', -1) AND step_id_dst = ' || d) INTO _next_step_id;
+    END IF;
+
+    IF _next_step_id IS NULL THEN
         return false;
     END IF;
 
     FOR _dependence IN
         SELECT * FROM workflow_next_step_dependence where next_step_id = _next_step_id
     LOOP
-        EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id = ' || entity_id || ' and workflow_group_id = ' || _dependence.workflow_group_id || ') as wf_current_step;', table_name) INTO _wf_current_step;
+        EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id=%L and workflow_group_id = ' || _dependence.workflow_group_id || ') as wf_current_step;', table_name, entity_id) INTO _wf_current_step;
         EXECUTE format('SELECT count(*) FROM workflow_next_step_dependence_step where next_step_id =' || _next_step_id || ' AND workflow_group_id =' || _dependence.workflow_group_id || ' AND step_id =' || _wf_current_step) INTO _count;
         IF _count = 0 THEN
             return false;
@@ -44,7 +49,7 @@ DECLARE
     _historic_table_name varchar := quote_ident(TG_TABLE_NAME) || '_historic';
 BEGIN
     EXECUTE format('SELECT count(id) FROM "workflow_entity" WHERE "workflow_group_id" = ' || new.workflow_group_id || ' AND "table_name" = ''' || _table_name ||  '''' ) INTO _ct;
-    IF(_ct == 0) THEN
+    IF(_ct = 0) THEN
         RAISE EXCEPTION 'workflow not registered for this table';
     END IF;
 
@@ -60,7 +65,7 @@ BEGIN
 
     EXECUTE format('
         INSERT INTO ' || _historic_table_name || '(step_id, workflow_group_id, entity_id) 
-        VALUES(' || new.step_id || ', ' || new.workflow_group_id || ', ' || new.entity_id || ') RETURNING id;' 
+        VALUES(' || new.step_id || ', ' || new.workflow_group_id || ', ''' || new.entity_id || ''') RETURNING id;' 
     ) INTO _historic_id;
     new.historic_id = _historic_id;
     RETURN new;
