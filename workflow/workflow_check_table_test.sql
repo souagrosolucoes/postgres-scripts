@@ -16,7 +16,7 @@ CREATE TABLE "table_test_workflow_step" (
     "entity_id" integer NOT NULL,
     "workflow_group_id" integer NOT NULL,
     "step_id" integer NOT NULL,
-    "historic_id" integer NOT NULL,
+    "historic_id" integer DEFAULT 0 NOT NULL,
     CONSTRAINT "table_test_workflow_step_entity_id_workflow_group_id" UNIQUE ("entity_id", "workflow_group_id"),
     CONSTRAINT "table_test_workflow_step_id" PRIMARY KEY ("id"),
     CONSTRAINT "table_test_workflow_step_entity_id_fkey" FOREIGN KEY (entity_id) REFERENCES table_test(id),

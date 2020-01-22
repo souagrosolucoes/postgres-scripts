@@ -25,8 +25,15 @@ CREATE OR REPLACE FUNCTION workflow_insert_historic()
 RETURNS trigger AS $BODY$
 DECLARE
     _historic_id int := 0;
+    _ct int := 0;
+    _table_name varchar := quote_ident(TG_TABLE_NAME);
     _historic_table_name varchar := quote_ident(TG_TABLE_NAME) || '_historic';
 BEGIN
+    EXECUTE format('SELECT count(id) FROM "workflow_entity" WHERE "workflow_group_id" = ' || new.workflow_group_id || ' AND "table_name" = ''' || _table_name ||  '''' ) INTO _ct;
+    IF(_ct == 0) THEN
+        RAISE EXCEPTION 'workflow not registered for this table';
+    END IF;
+
     IF (old.step_id = new.step_id) THEN
         RETURN new;
     END IF;
@@ -55,6 +62,14 @@ CREATE TABLE "workflow_group" (
     "name" character varying(256) NOT NULL,
     "description" text,
     CONSTRAINT "workflow_group_id" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "workflow_entity" (
+    "id" serial NOT NULL,
+    "workflow_group_id" integer NOT NULL,
+    "table_name" text NOT NULL,
+    CONSTRAINT "workflow_entity_id" PRIMARY KEY ("id"),
+    CONSTRAINT "workflow_entity_workflow_group_id_fkey" FOREIGN KEY (workflow_group_id) REFERENCES workflow_group(id)
 );
 
 CREATE TABLE "workflow_group_step" (
