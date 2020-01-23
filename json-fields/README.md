@@ -43,4 +43,4 @@ CREATE TRIGGER validate_custom_fields_table_test BEFORE INSERT OR UPDATE ON tabl
 FOR EACH ROW EXECUTE FUNCTION validate_constraints();
 ```
 
-No arquivo [DML.sql](DML.sql) é exibido alguns exemplos de metadados e no arquivo [DML-exemple-registered-fields.sql](DML-exemple-registered-fields.sql) é mostrado a ativação do campo para a entidade ***table_test***, e o registro de alguns campos.
+No arquivo [DML-sample.sql](DML-sample.sql) é exibido alguns exemplos de metadados e no arquivo [DML-exemple-registered-fields.sql](DML-exemple-registered-fields.sql) é mostrado a ativação do campo para a entidade ***table_test***, e o registro de alguns campos.
