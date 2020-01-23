@@ -123,7 +123,7 @@ CREATE TABLE "entidade_workflow_step_historic" (
     "id" serial NOT NULL,
     "step_id" integer NOT NULL,
     "workflow_group_id" integer NOT NULL,
-    "entity_id" uuid NOT NULL,
+    "entity_id" int NOT NULL,
     "time_from" timestamp DEFAULT now() NOT NULL,
     "time_to" timestamp,
     CONSTRAINT "entidade_workflow_step_historic_id" PRIMARY KEY ("id"),
@@ -146,7 +146,7 @@ Para a ***entidade***_workflow_step deve se ter a estrutura (sempre mantenha o p
 ```sql
 CREATE TABLE "entidade_workflow_step" (
     "id" serial NOT NULL,
-    "entity_id" uuid NOT NULL,
+    "entity_id" int NOT NULL,
     "workflow_group_id" integer NOT NULL,
     "step_id" integer NOT NULL,
     "historic_id" integer DEFAULT 0 NOT NULL,
