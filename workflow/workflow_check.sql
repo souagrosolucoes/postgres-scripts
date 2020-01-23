@@ -10,8 +10,7 @@ BEGIN
 
     EXECUTE format('SELECT (SELECT step_id FROM "%s" WHERE entity_id=%L and workflow_group_id = ' || wf || ') as current_step;', table_name, entity_id) INTO _current_step;
     IF(_current_step = d) THEN
-        RAISE EXCEPTION 'source is the same as the destination';
-        return false;
+        return true;
     END IF;
 
     IF(_current_step IS NULL) THEN
@@ -54,10 +53,10 @@ BEGIN
     END IF;
 
     IF (old.step_id = new.step_id) THEN
-        RETURN new;
+        RAISE EXCEPTION 'source is the same as the destination';
     END IF;
 
-    IF (TG_OP = 'UPDATE') THEN    
+    IF (TG_OP = 'UPDATE') THEN
         EXECUTE format('UPDATE ' || _historic_table_name || ' SET time_to = now() WHERE id = ' || new.historic_id);
         old.step_id = new.step_id;
         new = old;
