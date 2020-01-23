@@ -72,6 +72,8 @@ CREATE TABLE metadata_fields (
     "name" character varying(256) NOT NULL,
     "constraints" text NOT NULL,
     "type" metadata_fields_type DEFAULT 'text' NOT NULL,
+    "locked" boolean DEFAULT true NOT NULL,
+    "message" text,
     CONSTRAINT "metadata_fields_id" PRIMARY KEY ("id")
 );
 
@@ -84,6 +86,8 @@ CREATE TABLE registered_fields (
     "table_name" character varying(256) NOT NULL,
     "enable" boolean DEFAULT true NOT NULL,
     "required" boolean DEFAULT false NOT NULL,
+    "error_code" text,
+    "error_message" text,
     CONSTRAINT "registered_fields_id" PRIMARY KEY ("id"),
     CONSTRAINT "registered_fields_slug" UNIQUE ("slug"),
     CONSTRAINT "registered_fields_foreign_metadata_fields" FOREIGN KEY ("metadata_fields_id") REFERENCES metadata_fields
