@@ -22,7 +22,7 @@ BEGIN
         SELECT * FROM registered_fields rf INNER JOIN metadata_fields mf ON rf.metadata_fields_id = mf.id
         WHERE rf.table_name = _tg_table_name and rf.enable = true and rf.required = true LOOP
         IF (new.custom_fields->_registered_field.slug IS NULL) THEN
-            RAISE EXCEPTION 'metadata % is required', _registered_field.slug;
+            RAISE EXCEPTION 'the field "custom_fields.%" is required', _registered_field.slug USING ERRCODE = '22J01';
         END IF;
     END LOOP;
 
@@ -34,7 +34,7 @@ BEGIN
         EXECUTE format('SELECT * FROM registered_fields rf WHERE rf.table_name = ''%s'' and rf.enable = true and rf.slug = ''%s'' ', _tg_table_name, _field.key);
         GET DIAGNOSTICS _ct = ROW_COUNT;
         IF _ct = 0 THEN
-            RAISE EXCEPTION 'metadata % custom fields not exist', _field.key;
+            RAISE EXCEPTION 'the field "%" is not registered or enabled for table %', field.key, _tg_table_name USING ERRCODE = '22J02';
         END IF;
 
         FOR _metadata IN
@@ -42,11 +42,11 @@ BEGIN
             WHERE rf.table_name = _tg_table_name and rf.enable = true and rf.slug = _field.key LOOP
 
             IF _metadata.required = true and _field.value IS null THEN
-                RAISE EXCEPTION 'custom_fields is required';
+                RAISE EXCEPTION 'the field "custom_fields.%" is required', _field.key USING ERRCODE = '22J01';
             END IF;
             
             IF _field.value !~ _metadata.constraints THEN
-                RAISE EXCEPTION 'custom_fields value does not have a valid value (% for constraint: %)', _field.value, _metadata.constraints;
+                RAISE EXCEPTION 'custom_fields value does not have a valid value (% for constraint: %)', _field.value, _metadata.constraints USING ERRCODE = '22J03';
             END IF;
 
             CASE
